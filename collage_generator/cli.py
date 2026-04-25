@@ -95,6 +95,12 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Padding around face boxes as fraction of face size. (default: 0.35)",
     )
     parser.add_argument(
+        "--face-only",
+        action="store_true",
+        default=False,
+        help="Only protect faces (not full body). By default, keep zones expand to estimated full-body bounds.",
+    )
+    parser.add_argument(
         "--hero",
         action="store_true",
         default=False,
@@ -176,6 +182,7 @@ def run(argv: list[str] | None = None) -> int:
             args.input_dir,
             confidence=args.face_confidence,
             padding_ratio=args.face_padding,
+            body_aware=not args.face_only,
         )
         total_faces = sum(len(img.keep_zones) for img in images)
         logger.info(

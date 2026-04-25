@@ -177,10 +177,59 @@ def _apply_padding(
     return padded
 
 
+def _expand_to_body(
+    zones: list[KeepZone],
+    img_width: int,
+    img_height: int,
+) -> list[KeepZone]:
+    """Expand face keep zones to estimated full-body bounding boxes.
+
+    Uses standard anthropometric ratios:
+      - Total body height ≈ 7.5 × face height
+      - Shoulder span ≈ 3 × face width
+      - Face sits at the top ~1/7.5 of the body
+
+    The resulting keep zone covers the estimated head-to-toe region,
+    clamped to image boundaries. This makes the cropper prioritize
+    showing the entire person rather than just the face.
+    """
+    expanded: list[KeepZone] = []
+    for kz in zones:
+        face_cx = kz.x + kz.width / 2.0
+        face_top = kz.y
+
+        # Estimate body dimensions from face size
+        body_height = kz.height * 7.5
+        body_width = kz.width * 3.0
+
+        # Body extends from above the head to the feet
+        body_top = face_top - kz.height * 0.5  # hair/head top
+        body_bottom = face_top + body_height
+        body_left = face_cx - body_width / 2.0
+        body_right = face_cx + body_width / 2.0
+
+        # Clamp to image bounds
+        new_x = max(0, int(body_left))
+        new_y = max(0, int(body_top))
+        new_right = min(img_width, int(body_right))
+        new_bottom = min(img_height, int(body_bottom))
+
+        expanded.append(KeepZone(
+            x=new_x,
+            y=new_y,
+            width=new_right - new_x,
+            height=new_bottom - new_y,
+            confidence=kz.confidence,
+        ))
+
+    return expanded
+
+
 def detect_single_image(
     image_path: Path,
     confidence: float = 0.5,
     padding_ratio: float = 0.25,
+    body_aware: bool = True,
 ) -> ImageInfo:
     """Detect faces in a single image and return ImageInfo with Keep Zones.
 
@@ -188,6 +237,8 @@ def detect_single_image(
         image_path: Path to the input image.
         confidence: Minimum detection confidence (0-1).
         padding_ratio: How much to expand face boxes (fraction of face size).
+        body_aware: If True, expand keep zones to estimated full-body bounds.
+                    If False, only protect the face/head region.
 
     Returns:
         ImageInfo with detected keep zones.
@@ -211,9 +262,14 @@ def detect_single_image(
         logger.info("Using Haar cascade fallback for %s", image_path.name)
         zones = _haar_cascade_detection(image_gray, img_width, img_height)
 
-    # Apply padding to expand face boxes into "head" zones
+    # Expand keep zones
     if zones:
-        zones = _apply_padding(zones, img_width, img_height, padding_ratio)
+        if body_aware:
+            # Expand to estimated full-body bounding box
+            zones = _expand_to_body(zones, img_width, img_height)
+        else:
+            # Only pad around the face/head
+            zones = _apply_padding(zones, img_width, img_height, padding_ratio)
 
     logger.info(
         "Detected %d face(s) in %s (%dx%d)",
@@ -232,6 +288,7 @@ def detect_all_images(
     input_dir: Path,
     confidence: float = 0.5,
     padding_ratio: float = 0.25,
+    body_aware: bool = True,
 ) -> list[ImageInfo]:
     """Scan all images in a directory and detect faces.
 
@@ -239,6 +296,7 @@ def detect_all_images(
         input_dir: Directory containing input images.
         confidence: Minimum face detection confidence.
         padding_ratio: Padding ratio for keep zones.
+        body_aware: If True, expand keep zones to full-body estimates.
 
     Returns:
         List of ImageInfo objects, one per valid image found.
@@ -263,7 +321,7 @@ def detect_all_images(
     results: list[ImageInfo] = []
     for path in image_paths:
         try:
-            info = detect_single_image(path, confidence, padding_ratio)
+            info = detect_single_image(path, confidence, padding_ratio, body_aware)
             results.append(info)
         except ValueError as e:
             logger.warning("Skipping %s: %s", path.name, e)

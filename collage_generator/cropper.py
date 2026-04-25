@@ -82,17 +82,11 @@ def _compute_crop_for_image(
 
     # Step 3: Check if the crop window can contain the keep zone envelope
     if crop_w < env_w or crop_h < env_h:
-        # Crop window is too small to contain all faces → letterbox
         logger.info(
-            "Letterboxing %s: keep zone (%dx%d) exceeds crop window (%dx%d)",
-            image.path.name, env_w, env_h, crop_w, crop_h,
+            "Crop window (%dx%d) is smaller than keep zone (%dx%d) for %s. Forcing crop.",
+            crop_w, crop_h, env_w, env_h, image.path.name,
         )
-        return CropSpec(
-            image_info=image,
-            cell=cell,
-            crop_box=(0, 0, img_w, img_h),  # Use entire image
-            letterbox=True,
-        )
+        # Proceed to position the crop window centered on the envelope anyway
 
     # Step 4: Position the crop window to contain the keep zone envelope
     # Center the crop on the envelope centroid, then clamp to image bounds
@@ -101,6 +95,10 @@ def _compute_crop_for_image(
 
     crop_x = int(round(env_center_x - crop_w / 2.0))
     crop_y = int(round(env_center_y - crop_h / 2.0))
+
+    if crop_h < env_h:
+        # Align with the top of the envelope to avoid cutting off the head
+        crop_y = int(env_y)
 
     # Clamp to image boundaries
     crop_x = max(0, min(crop_x, img_w - crop_w))
@@ -112,27 +110,29 @@ def _compute_crop_for_image(
     crop_bottom = crop_y + crop_h
 
     # Check if envelope is still fully inside
-    if env_x < crop_x:
-        crop_x = max(0, env_x)
-        crop_right = crop_x + crop_w
-        if crop_right > img_w:
-            crop_right = img_w
+    if crop_w >= env_w:
+        if env_x < crop_x:
+            crop_x = max(0, env_x)
+            crop_right = crop_x + crop_w
+            if crop_right > img_w:
+                crop_right = img_w
+                crop_x = max(0, crop_right - crop_w)
+
+        if env_x + env_w > crop_right:
+            crop_right = min(img_w, env_x + env_w)
             crop_x = max(0, crop_right - crop_w)
 
-    if env_y < crop_y:
-        crop_y = max(0, env_y)
-        crop_bottom = crop_y + crop_h
-        if crop_bottom > img_h:
-            crop_bottom = img_h
+    if crop_h >= env_h:
+        if env_y < crop_y:
+            crop_y = max(0, env_y)
+            crop_bottom = crop_y + crop_h
+            if crop_bottom > img_h:
+                crop_bottom = img_h
+                crop_y = max(0, crop_bottom - crop_h)
+
+        if env_y + env_h > crop_bottom:
+            crop_bottom = min(img_h, env_y + env_h)
             crop_y = max(0, crop_bottom - crop_h)
-
-    if env_x + env_w > crop_right:
-        crop_right = min(img_w, env_x + env_w)
-        crop_x = max(0, crop_right - crop_w)
-
-    if env_y + env_h > crop_bottom:
-        crop_bottom = min(img_h, env_y + env_h)
-        crop_y = max(0, crop_bottom - crop_h)
 
     crop_right = crop_x + crop_w
     crop_bottom = crop_y + crop_h
@@ -144,16 +144,15 @@ def _compute_crop_for_image(
     )
 
     if not all_contained:
-        # This should be rare — fall back to letterbox
         logger.warning(
-            "Cannot contain all keep zones in crop for %s, falling back to letterbox.",
+            "Cannot contain all keep zones in crop for %s, but forcing crop.",
             image.path.name,
         )
         return CropSpec(
             image_info=image,
             cell=cell,
-            crop_box=(0, 0, img_w, img_h),
-            letterbox=True,
+            crop_box=(crop_x, crop_y, crop_right, crop_bottom),
+            letterbox=False,
         )
 
     logger.debug(
