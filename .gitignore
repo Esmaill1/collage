@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Output and temp files
+/output/
+collage.png
+collage_debug.png
+collage_hero.png
+collage_hero_debug.png
+*debug.png
+*.png
+
+# Ignore test images but not the folder itself
+/test_images/*
+!/test_images/.gitkeep
+
+# Models
+.model_cache/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.env
+.venv
+
+# VS Code / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# MacOS
+.DS_Store
