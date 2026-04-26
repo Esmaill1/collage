@@ -70,6 +70,7 @@ python3 main.py \
   --input_dir ./photos \
   --output_file collage.png \
   --width 2500 \
+  --height 3000 \
   --padding 4 \
   --bg-color "#1a1a1a" \
   --weight-strategy faces \
@@ -87,7 +88,8 @@ python3 main.py \
 |---|---|---|
 | `--input_dir` | *(required)* | Folder containing input images |
 | `--output_file` | *(required)* | Path to save the output collage |
-| `--width` | `2500` | Canvas width in pixels (height auto-computed for 5:6) |
+| `--width` | `2500` | Canvas width in pixels |
+| `--height` | `0` | Canvas height in pixels (0 = auto-computed for 5:6 ratio) |
 | `--debug` | `false` | Output debug image with face detection overlays |
 | `--padding` | `4` | Gap between images in pixels |
 | `--bg-color` | `#1a1a1a` | Background/letterbox color (hex) |
@@ -95,7 +97,7 @@ python3 main.py \
 | `--weight-strategy` | `equal` | Image weighting: `equal`, `faces`, or `resolution` |
 | `--face-padding` | `0.35` | Padding around face boxes (fraction of face size) |
 | `--face-only` | `false` | Only protect faces (not full body). By default, keep zones expand to full body. |
-| `--hero` | `false` | Enable hero layout. Image with 'hero' in filename is placed large/centered. |
+| `--hero` | `false` | Enable hero layout. Image with 'hero' in filename is placed large/centered. (In the Web UI, use the ⭐ star button on thumbnails) |
 | `--hero-scale` | `0.45` | Hero image size as fraction of canvas (0.3-0.7). |
 | `-v` / `--verbose` | `false` | Enable debug logging |
 
@@ -119,7 +121,10 @@ When `--debug` is enabled, an additional image is saved with:
 ```
 collage/
 ├── ui/                  # React + Vite frontend
-│   └── src/             # UI source code, components, CSS
+│   └── src/             # UI source code
+│       ├── components/  # DropZone, SettingsPanel, ImageThumbnail
+│       ├── App.tsx      # Main application shell
+│       └── index.css    # Global design system & tokens
 ├── collage_generator/
 │   ├── __init__.py      # Package init
 │   ├── cli.py           # CLI entry point & pipeline orchestration

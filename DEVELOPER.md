@@ -7,8 +7,10 @@ Welcome to the Saliency-Aware Collage Generator developer documentation. This gu
 The system is designed as a linear, decoupled 4-phase pipeline wrapped by either a command-line interface or a web interface. The core pipeline logic lives in `collage_generator/`.
 
 The system's execution flow based on usage mode:
-**Web UI (React)** -> **FastAPI Backend (`api.py`)** -> **Pipeline Execution**
+**Web UI (React Component Architecture)** -> **FastAPI Backend (`api.py`)** -> **Pipeline Execution**
 **CLI Tool (`main.py`)** -> **Pipeline Execution**
+
+*Note on Web UI vs CLI:* The Web UI provides an interactive experience, including explicit `height` controls and selecting a "hero" image via a star button on image thumbnails. The FastAPI backend translates these selections into CLI arguments (e.g., passing `--height` and dynamically renaming selected hero files to append `_hero` so the underlying CLI pipeline detects them).
 
 ### The Core Pipeline
 
@@ -42,8 +44,8 @@ The pipeline relies on these core dataclasses to pass information between phases
 
 ### Phase 2: Layout (`layout.py`)
 
-**Goal:** Partition the 5:6 canvas into non-overlapping rectangles (cells) for each image.
-**Input:** List of `ImageInfo` objects, canvas dimensions.
+**Goal:** Partition the canvas into non-overlapping rectangles (cells) for each image.
+**Input:** List of `ImageInfo` objects, canvas dimensions (width and height).
 **Output:** List of `Cell` objects.
 
 **Implementation Details:**
@@ -52,7 +54,7 @@ The pipeline relies on these core dataclasses to pass information between phases
   - `equal`: Every image gets an equal slice of the canvas.
   - `faces`: Images with more detected faces get larger cells.
   - `resolution`: Higher resolution images get larger cells.
-- **Hero Layout:** If the `--hero` flag is passed, the tool searches for an image with "hero" in its filename. This image is placed in the center (taking up a configurable percentage of the canvas via `--hero-scale`), and the remaining images are packed around it using the squarify algorithm on the remaining border areas.
+- **Hero Layout:** If the `--hero` flag is passed, the tool searches for an image with "hero" in its filename. This image is placed in the center (taking up a configurable percentage of the canvas via `--hero-scale`), and the remaining images are packed around it using the squarify algorithm on the remaining border areas. (When used via the Web UI, selected hero files are dynamically renamed to include `_hero` before processing).
 
 ### Phase 3: Cropping (`cropper.py`)
 
