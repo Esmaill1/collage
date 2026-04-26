@@ -1,15 +1,17 @@
 # Saliency-Aware Collage Generator
 
-A Python CLI tool that packs images of varying aspect ratios into a **5:6 canvas** while **guaranteeing that detected faces are never cropped**.
+A Python CLI tool that packs images of varying aspect ratios into a **5:6 canvas** while **guaranteeing that detected faces are never cropped**. It gracefully handles situations where perfectly fitting all bodies is mathematically impossible by prioritizing faces and head-alignment over lower bodies, avoiding ugly black letterbox bars.
+
+For developer documentation, architecture overview, and how to contribute, please see [DEVELOPER.md](DEVELOPER.md).
 
 ## How It Works
 
 The pipeline has 4 phases:
 
-1. **Face Detection** — Uses MediaPipe BlazeFace (with OpenCV Haar cascade fallback) to detect faces and create padded "Keep Zones"
-2. **Treemap Layout** — Uses a Squarified Treemap algorithm to partition the canvas into cells (zero wasted space)
-3. **Saliency-Aware Crop** — For each image-cell pair, computes the optimal crop that preserves all faces (closed-form geometry, O(1) per image)
-4. **PIL Rendering** — Composites the final collage with LANCZOS resampling
+1. **Face Detection** — Uses MediaPipe BlazeFace (with OpenCV Haar cascade fallback) to detect faces and create padded "Keep Zones". Can optionally expand to estimate full-body bounds.
+2. **Treemap Layout** — Uses a Squarified Treemap algorithm to partition the canvas into cells (zero wasted space). Supports a "Hero" layout to feature one large image.
+3. **Saliency-Aware Crop** — For each image-cell pair, computes the optimal crop that preserves all faces (closed-form geometry). If a crop is too tight, it will smartly top-align to keep heads visible without resorting to letterboxing.
+4. **PIL Rendering** — Composites the final collage with LANCZOS resampling.
 
 ## Installation
 
@@ -26,6 +28,9 @@ python3 main.py --input_dir ./photos --output_file collage.png
 # With debug overlays (shows face detection boxes)
 python3 main.py --input_dir ./photos --output_file collage.png --debug
 
+# Hero layout (features an image with 'hero' in its filename prominently in the center)
+python3 main.py --input_dir ./photos --output_file collage.png --hero
+
 # Full options
 python3 main.py \
   --input_dir ./photos \
@@ -36,6 +41,8 @@ python3 main.py \
   --weight-strategy faces \
   --face-confidence 0.5 \
   --face-padding 0.25 \
+  --hero \
+  --hero-scale 0.45 \
   --debug \
   -v
 ```
@@ -50,9 +57,12 @@ python3 main.py \
 | `--debug` | `false` | Output debug image with face detection overlays |
 | `--padding` | `4` | Gap between images in pixels |
 | `--bg-color` | `#1a1a1a` | Background/letterbox color (hex) |
-| `--face-confidence` | `0.5` | MediaPipe face detection confidence (0-1) |
+| `--face-confidence` | `0.35` | MediaPipe face detection confidence (0-1) |
 | `--weight-strategy` | `equal` | Image weighting: `equal`, `faces`, or `resolution` |
-| `--face-padding` | `0.25` | Padding around face boxes (fraction of face size) |
+| `--face-padding` | `0.35` | Padding around face boxes (fraction of face size) |
+| `--face-only` | `false` | Only protect faces (not full body). By default, keep zones expand to full body. |
+| `--hero` | `false` | Enable hero layout. Image with 'hero' in filename is placed large/centered. |
+| `--hero-scale` | `0.45` | Hero image size as fraction of canvas (0.3-0.7). |
 | `-v` / `--verbose` | `false` | Enable debug logging |
 
 ## Weight Strategies
@@ -84,6 +94,7 @@ collage/
 │   └── models.py        # Data classes (KeepZone, ImageInfo, Cell, CropSpec)
 ├── main.py              # Script entry point
 ├── requirements.txt     # Dependencies
+├── DEVELOPER.md         # Documentation for contributors
 └── README.md            # This file
 ```
 
