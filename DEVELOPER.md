@@ -4,9 +4,15 @@ Welcome to the Saliency-Aware Collage Generator developer documentation. This gu
 
 ## Architecture Overview
 
-The system is designed as a linear, decoupled 4-phase pipeline. Each phase is separated by a clear data contract defined in `collage_generator/models.py`.
+The system is designed as a linear, decoupled 4-phase pipeline wrapped by either a command-line interface or a web interface. The core pipeline logic lives in `collage_generator/`.
 
-The flow of data is as follows:
+The system's execution flow based on usage mode:
+**Web UI (React)** -> **FastAPI Backend (`api.py`)** -> **Pipeline Execution**
+**CLI Tool (`main.py`)** -> **Pipeline Execution**
+
+### The Core Pipeline
+
+Each phase in the core pipeline is separated by a clear data contract defined in `collage_generator/models.py`. The flow of data is as follows:
 **Images** -> [Phase 1: Detection] -> **`ImageInfo`** -> [Phase 2: Layout] -> **`Cell`** -> [Phase 3: Cropping] -> **`CropSpec`** -> [Phase 4: Rendering] -> **Output Collage**
 
 ### Data Models (`models.py`)
@@ -89,10 +95,18 @@ If you notice images are cropping poorly, look into `collage_generator/cropper.p
 
 1. **Clone the repository.**
 2. **Create a virtual environment:** `python3 -m venv venv && source venv/bin/activate`
-3. **Install dependencies:** `pip install -r requirements.txt`
-4. **Run the CLI:** `python3 main.py --help`
+3. **Install Python dependencies:** `pip install -r requirements.txt`
+4. **Install Node.js dependencies:** `cd ui && npm install && cd ..`
 
-To test changes quickly, use the test images provided or add your own, and always generate a debug image to verify the bounding boxes:
+### Running the Full Web Stack
+To test the web interface locally, you can use the provided bash script to start both the FastAPI backend and the Vite frontend:
+```bash
+./start.sh
+```
+This script handles running both services and shutting them down gracefully when you press `Ctrl+C`. The frontend is served at `http://localhost:5173` and the backend at `http://localhost:8000`.
+
+### Running the CLI
+To test CLI-specific changes quickly, use the test images provided or add your own, and always generate a debug image to verify the bounding boxes:
 ```bash
 python3 main.py --input_dir ./test_images --output_file output.png --debug
 ```

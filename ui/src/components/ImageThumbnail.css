@@ -1,0 +1,136 @@
+/* ============================================================
+   ImageThumbnail — Individual image preview card
+   ============================================================ */
+
+.thumb {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  transition:
+    transform var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  cursor: default;
+}
+
+.thumb:hover {
+  transform: scale(1.04);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  z-index: 1;
+}
+
+.thumb--hero {
+  border-color: hsla(45, 90%, 55%, 0.45);
+  box-shadow: 0 0 12px hsla(45, 90%, 55%, 0.15);
+}
+
+.thumb--hero:hover {
+  border-color: hsla(45, 90%, 55%, 0.7);
+}
+
+/* Image */
+.thumb__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Hover overlay */
+.thumb__overlay {
+  position: absolute;
+  inset: 0;
+  background: hsla(0, 0%, 0%, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.thumb:hover .thumb__overlay {
+  opacity: 1;
+}
+
+/* Star button */
+.thumb__star {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: hsla(0, 0%, 100%, 0.15);
+  color: hsla(0, 0%, 100%, 0.7);
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+
+.thumb__star:hover {
+  transform: scale(1.15);
+  background: hsla(45, 90%, 55%, 0.3);
+  color: hsl(45, 90%, 55%);
+}
+
+.thumb__star--active {
+  background: hsla(45, 90%, 55%, 0.85);
+  color: white;
+}
+
+.thumb__star--active:hover {
+  background: hsl(45, 90%, 50%);
+  color: white;
+}
+
+.thumb__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: hsla(0, 70%, 55%, 0.85);
+  color: white;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+.thumb__remove:hover {
+  transform: scale(1.15);
+  background: hsl(0, 70%, 50%);
+}
+
+/* Info bar at bottom */
+.thumb__info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 3px 6px;
+  background: hsla(0, 0%, 0%, 0.6);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.thumb__name {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thumb__hero-badge {
+  color: hsl(45, 90%, 55%);
+  flex-shrink: 0;
+  fill: hsl(45, 90%, 55%);
+}

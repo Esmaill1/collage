@@ -1,0 +1,146 @@
+/* ============================================================
+   Design System — Collage Studio
+   ============================================================ */
+
+/* ---------- Reset ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- Custom Properties ---------- */
+:root {
+  /* — Color — */
+  --bg-base:        hsl(225, 15%, 7%);
+  --bg-surface:     hsla(225, 15%, 12%, 0.6);
+  --bg-surface-solid: hsl(225, 15%, 12%);
+  --bg-elevated:    hsla(225, 12%, 16%, 0.55);
+  --bg-input:       hsla(225, 14%, 14%, 0.8);
+
+  --border-subtle:  hsla(225, 10%, 100%, 0.06);
+  --border-default: hsla(225, 10%, 100%, 0.1);
+  --border-strong:  hsla(225, 10%, 100%, 0.15);
+
+  --text-primary:   hsl(0, 0%, 95%);
+  --text-secondary: hsl(225, 8%, 62%);
+  --text-tertiary:  hsl(225, 8%, 42%);
+  --text-danger:    hsl(0, 80%, 65%);
+
+  --accent-start:   #6366f1;   /* indigo */
+  --accent-mid:     #a855f7;   /* purple */
+  --accent-end:     #ec4899;   /* pink   */
+  --gradient-accent: linear-gradient(135deg, var(--accent-start), var(--accent-mid), var(--accent-end));
+
+  --success:        hsl(150, 60%, 50%);
+
+  /* — Typography — */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --fs-xs:   0.75rem;   /* 12px */
+  --fs-sm:   0.8125rem; /* 13px */
+  --fs-base: 0.875rem;  /* 14px */
+  --fs-md:   1rem;      /* 16px */
+  --fs-lg:   1.25rem;   /* 20px */
+  --fs-xl:   1.5rem;    /* 24px */
+  --fs-2xl:  2rem;      /* 32px */
+
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+
+  --lh-tight:  1.2;
+  --lh-normal: 1.5;
+
+  /* — Spacing — */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  12px;
+  --space-lg:  16px;
+  --space-xl:  24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* — Radius — */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
+  --radius-full: 9999px;
+
+  /* — Transitions — */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
+
+  /* — Shadows — */
+  --shadow-sm:  0 1px 2px  hsla(0, 0%, 0%, 0.3);
+  --shadow-md:  0 4px 12px hsla(0, 0%, 0%, 0.35);
+  --shadow-lg:  0 8px 30px hsla(0, 0%, 0%, 0.4);
+  --shadow-glow: 0 0 40px hsla(260, 80%, 60%, 0.15);
+}
+
+/* ---------- Base ---------- */
+html, body {
+  height: 100%;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100%;
+}
+
+/* ---------- Typography ---------- */
+h1, h2, h3, h4 {
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-tight);
+  color: var(--text-primary);
+}
+
+h1 { font-size: var(--fs-2xl); }
+h2 { font-size: var(--fs-xl); }
+h3 { font-size: var(--fs-lg); }
+h4 { font-size: var(--fs-md); }
+
+p {
+  color: var(--text-secondary);
+  line-height: var(--lh-normal);
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsla(225, 10%, 100%, 0.1);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsla(225, 10%, 100%, 0.18);
+}
+
+/* ---------- Selection ---------- */
+::selection {
+  background: hsla(260, 80%, 60%, 0.35);
+  color: var(--text-primary);
+}
+
+/* ---------- Focus ring ---------- */
+:focus-visible {
+  outline: 2px solid var(--accent-mid);
+  outline-offset: 2px;
+}

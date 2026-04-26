@@ -55,7 +55,13 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--width",
         type=int,
         default=2500,
-        help="Canvas width in pixels. Height is auto-computed for 5:6 ratio. (default: 2500)",
+        help="Canvas width in pixels. (default: 2500)",
+    )
+    parser.add_argument(
+        "--height",
+        type=int,
+        default=0,
+        help="Canvas height in pixels. If 0 (default), auto-computed for 5:6 ratio.",
     )
     parser.add_argument(
         "--debug",
@@ -124,6 +130,10 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     # Validate
     if args.width < 100:
         parser.error("--width must be at least 100 pixels.")
+    if args.height < 0:
+        parser.error("--height must be >= 0 (0 = auto).")
+    if args.height > 0 and args.height < 100:
+        parser.error("--height must be at least 100 pixels (or 0 for auto).")
     if not 0.0 <= args.face_confidence <= 1.0:
         parser.error("--face-confidence must be between 0.0 and 1.0.")
     if args.padding < 0:
@@ -162,10 +172,13 @@ def run(argv: list[str] | None = None) -> int:
     logger.info("=" * 60)
 
     canvas_width = args.width
-    canvas_height = int(round(canvas_width / ASPECT_RATIO))
+    if args.height > 0:
+        canvas_height = args.height
+    else:
+        canvas_height = int(round(canvas_width / ASPECT_RATIO))
     strategy = WeightStrategy(args.weight_strategy)
 
-    logger.info("Canvas: %d x %d (5:6 ratio)", canvas_width, canvas_height)
+    logger.info("Canvas: %d x %d", canvas_width, canvas_height)
     logger.info("Input:  %s", args.input_dir)
     logger.info("Output: %s", args.output_file)
     logger.info("Strategy: %s | Padding: %dpx | Debug: %s",

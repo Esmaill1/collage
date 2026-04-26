@@ -1,12 +1,14 @@
 # Saliency-Aware Collage Generator
 
-A Python CLI tool that packs images of varying aspect ratios into a **5:6 canvas** while **guaranteeing that detected faces are never cropped**. It gracefully handles situations where perfectly fitting all bodies is mathematically impossible by prioritizing faces and head-alignment over lower bodies, avoiding ugly black letterbox bars.
+A Python CLI and Web application that packs images of varying aspect ratios into a **5:6 canvas** while **guaranteeing that detected faces are never cropped**. It gracefully handles situations where perfectly fitting all bodies is mathematically impossible by prioritizing faces and head-alignment over lower bodies, avoiding ugly black letterbox bars.
+
+The project now includes a **React Web UI** backed by a **FastAPI backend** for an easy-to-use, interactive experience, in addition to the original CLI tool.
 
 For developer documentation, architecture overview, and how to contribute, please see [DEVELOPER.md](DEVELOPER.md).
 
 ## How It Works
 
-The pipeline has 4 phases:
+The core pipeline has 4 phases:
 
 1. **Face Detection** — Uses MediaPipe BlazeFace (with OpenCV Haar cascade fallback) to detect faces and create padded "Keep Zones". Can optionally expand to estimate full-body bounds.
 2. **Treemap Layout** — Uses a Squarified Treemap algorithm to partition the canvas into cells (zero wasted space). Supports a "Hero" layout to feature one large image.
@@ -15,11 +17,43 @@ The pipeline has 4 phases:
 
 ## Installation
 
+### Prerequisites
+- Python 3.10+
+- Node.js (for the Web UI)
+
+### Setup
+
+Install the Python backend dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
+Install the Node.js frontend dependencies:
+```bash
+cd ui
+npm install
+cd ..
+```
+
 ## Usage
+
+### Web UI (Recommended)
+
+You can launch both the backend API and the frontend UI concurrently using the provided start script:
+
+```bash
+./start.sh
+```
+
+This will start:
+- Backend API at `http://localhost:8000`
+- Frontend UI at `http://localhost:5173`
+
+Open `http://localhost:5173` in your browser to use the interactive generator.
+
+### Command Line Interface
+
+You can still use the underlying CLI directly for batch processing or scripting:
 
 ```bash
 # Basic usage
@@ -84,6 +118,8 @@ When `--debug` is enabled, an additional image is saved with:
 
 ```
 collage/
+├── ui/                  # React + Vite frontend
+│   └── src/             # UI source code, components, CSS
 ├── collage_generator/
 │   ├── __init__.py      # Package init
 │   ├── cli.py           # CLI entry point & pipeline orchestration
@@ -92,8 +128,10 @@ collage/
 │   ├── cropper.py       # Phase 3: Saliency-aware crop optimizer
 │   ├── renderer.py      # Phase 4: PIL rendering engine
 │   └── models.py        # Data classes (KeepZone, ImageInfo, Cell, CropSpec)
-├── main.py              # Script entry point
-├── requirements.txt     # Dependencies
+├── api.py               # FastAPI backend for the web interface
+├── main.py              # Script entry point for CLI usage
+├── requirements.txt     # Python dependencies
+├── start.sh             # Launch script for the full stack (API + UI)
 ├── DEVELOPER.md         # Documentation for contributors
 └── README.md            # This file
 ```
